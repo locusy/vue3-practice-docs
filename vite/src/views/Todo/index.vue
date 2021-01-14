@@ -1,11 +1,16 @@
 <template>
   <section class="todoapp">
+    <!-- <teleport to="#modal">
+      <div class="modal" v-if="x<10||y<10"></div>
+    </teleport> -->
     <header class="header" :class="{fixed:top>130}">
       <h1>{{count}} <button @click="addCount(todo)">addCount</button></h1>
       <h1>{{x}},{{y}}</h1>
-      <input class="new-todo"
+      <input 
+        class="new-todo"
         placeholder="想干的事"
         v-model="newTodo"
+        v-todo-focus=""
         @keyup.enter="addTodo">
     </header>
 
@@ -16,13 +21,20 @@
         <li v-for="todo in todos"
           class="todo"
           :key="todo.id"
-          :class="{ completed: todo.completed }"
-          >
+          :class="{ completed: todo.completed, editing: todo == editedTodo }">
           <div class="view">
-            <input class="toggle" type="checkbox" v-model="todo.completed" >
-            <label>{{ todo.title }}</label>
-            <button class="destroy" @click="removeTodo(todo)">delete</button>
+            <input class="toggle" type="checkbox" v-model="todo.completed">
+            <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
+            <button class="destroy" @click="removeTodo(todo)">del</button>
           </div>
+          <input
+            class="edit"
+            type="text"
+            v-model="todo.title"
+            v-todo-focus="todo == editedTodo"
+            @blur="doneEdit(todo)"
+            @keyup.enter="doneEdit(todo)"
+            @keyup.esc="cancelEdit(todo)">
         </li>
       </ul>
     </section>
@@ -46,7 +58,7 @@ import {
   ref,   // 接受一个参数值并返回一个响应式且可改变的 ref 对象。ref 对象拥有一个指向内部值的单一属性 .value。
   toRef,  // 可以用来为一个 reactive 对象的属性创建一个 ref。这个 ref 可以被传递并且能够保持响应性。
   toRefs,   // 可以用来为一个reactive对象的属性创建一个ref。这个ref可以被传递并且能够保持响应性 和响应式对象 property 一一对应
-  computed,
+  computed, // 计算属性
   nextTick,  // 这是一个任务队列，等待同步任务结束之后依次执行
   watch,  // 监控一个对象或者属性，发生变化之后在操作
   watchEffect, // 监听器的升级版本，立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
@@ -65,7 +77,9 @@ interface Reactive {
   newTodo: string,
   todos: Array<Todo>,
   foo: number,
-  bar: number
+  bar: number,
+  beforeEditCache: string,
+  editedTodo: null
 }
 
 export default defineComponent({
@@ -86,6 +100,8 @@ export default defineComponent({
       ],
       foo: 1,
       bar: 2,
+      beforeEditCache: '',
+      editedTodo: null
     }
     const state = reactive(object)
 
@@ -144,6 +160,28 @@ export default defineComponent({
       state.todos.splice(index, 1)
     }
 
+    function editTodo(todo) {
+      state.beforeEditCache = todo.title;
+      state.editedTodo = todo;
+    }
+
+    function doneEdit(todo) {
+      if (!state.editedTodo) {
+        return;
+      }
+      state.editedTodo = null;
+      todo.title = todo.title.trim();
+      if (!todo.title) {
+        removeTodo(todo);
+      }
+    }
+
+    function cancelEdit(todo) {
+      state.editedTodo = null;
+      todo.title = state.beforeEditCache;
+    }
+
+
     const remaining = computed(
       () => state.todos.filter(todo => !todo.completed).length
     )
@@ -184,14 +222,34 @@ export default defineComponent({
       y,
       addTodo,
       removeTodo,
-      removeCompleted
+      removeCompleted,
+      editTodo,
+      doneEdit,
+      cancelEdit
     }
   },
+  directives: {
+    "todo-focus": function(el, binding) {
+      if (binding.value) {
+        el.focus();
+      }
+    }
+  }
 })
 </script>
 
 
 <style>
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
+  right:0;
+  background: rgba(0,0,0,0.7);
+  z-index:1000;
+}
+
 .header.fixed{
   background: #fff;
   position: fixed;
@@ -200,5 +258,23 @@ export default defineComponent({
   right:0;
   width:100%;
   z-index:100;
+}
+
+.completed label {
+  text-decoration: line-through;
+}
+
+li .edit {
+  display: none;
+}
+li .view {
+  display: block;
+}
+li.editing .edit {
+  display: block;
+}
+
+li.editing .view {
+  display: none;
 }
 </style>
