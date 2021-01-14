@@ -1,7 +1,7 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 // import Todo from './../views/Todo/index.vue'
 
-export default createRouter({
+const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
@@ -10,3 +10,11 @@ export default createRouter({
     }
   ]
 })
+
+router.beforeEach(() => {
+})
+
+router.afterEach(() => {
+})
+
+export default router

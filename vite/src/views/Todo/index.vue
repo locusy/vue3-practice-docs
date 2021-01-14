@@ -3,6 +3,7 @@
     <!-- <teleport to="#modal">
       <div class="modal" v-if="x<10||y<10"></div>
     </teleport> -->
+    <h1>{{username}}</h1>
     <header class="header" :class="{fixed:top>130}">
       <h1>{{count}} <button @click="addCount(todo)">addCount</button></h1>
       <h1>{{x}},{{y}}</h1>
@@ -64,6 +65,8 @@ import {
   watchEffect, // 监听器的升级版本，立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
   onMounted,  // 挂载结束之后执行
 } from 'vue'
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import useScroll from './scroll'
 import useMouse from './mouse'
 
@@ -106,6 +109,33 @@ export default defineComponent({
     const state = reactive(object)
 
 
+    // store获取用法
+    const store = useStore()
+    const username = store.state['userName']
+
+
+    // 获取当前路由
+    const route = useRoute()
+
+    // 获取路由实例
+    const router = useRouter()
+
+    // 监听当前路由变化
+    // onBeforeRouteUpdate(() => {
+       // 当当前路由发生变化时，调用回调函数
+    //    console.log(route, 'route---')
+    // })
+    watch(route, (curr, prev) => {
+      /** */
+      console.log(curr, prev, 'prev')
+    }, {
+      immediate: true,
+      deep: true
+    })
+    // 路由跳转
+    // router.push({path: '/home'})
+
+
     /** toRef */
     const fooRef = toRef(state, 'foo')
     fooRef.value++
@@ -118,6 +148,9 @@ export default defineComponent({
     // watch 直接监听一个ref
     watch(count, (count, prevCount) => {
       /** */
+    }, {
+      immediate: true,
+      deep: true
     })
 
     function addCount(): void {
@@ -129,6 +162,9 @@ export default defineComponent({
       () => state.newTodo, 
       (newTodo, prevNewTodo) => {
         /** */
+      }, {
+        immediate: true,
+        deep: true
       }
     )
 
@@ -183,7 +219,7 @@ export default defineComponent({
 
 
     const remaining = computed(
-      () => state.todos.filter(todo => !todo.completed).length
+      () => state.todos.filter(todo => !todo.completed).length,
     )
 
     const allDone = computed({
@@ -196,6 +232,7 @@ export default defineComponent({
         });
       }
     })
+    
 
     function removeCompleted() {
       state.todos = state.todos.filter(todo => !todo.completed);
@@ -225,7 +262,8 @@ export default defineComponent({
       removeCompleted,
       editTodo,
       doneEdit,
-      cancelEdit
+      cancelEdit,
+      username
     }
   },
   directives: {

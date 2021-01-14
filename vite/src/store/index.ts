@@ -10,4 +10,7 @@ export default createStore({
       userName: "子君",
     }
   },
+  mutations: {},
+  actions: {},
+  modules: {}
 })
