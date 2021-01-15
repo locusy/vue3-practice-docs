@@ -64,7 +64,7 @@ import {
   watchEffect, // 监听器的升级版本，立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
   onMounted,  // 挂载结束之后执行
   onUpdated,
-  onUnmounted
+  onUnmounted,
 } from 'vue'
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
