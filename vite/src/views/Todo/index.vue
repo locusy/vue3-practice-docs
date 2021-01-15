@@ -11,7 +11,6 @@
         class="new-todo"
         placeholder="想干的事"
         v-model="newTodo"
-        v-todo-focus=""
         @keyup.enter="addTodo">
     </header>
 
@@ -64,6 +63,8 @@ import {
   watch,  // 监控一个对象或者属性，发生变化之后在操作
   watchEffect, // 监听器的升级版本，立即执行传入的一个函数，并响应式追踪其依赖，并在其依赖变更时重新运行该函数。
   onMounted,  // 挂载结束之后执行
+  onUpdated,
+  onUnmounted
 } from 'vue'
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -240,11 +241,20 @@ export default defineComponent({
     
     const {top} = useScroll()
     const {x,y} = useMouse()
-
+    
+    
+    // 生命周期函数
     onMounted(() => {
       nextTick(() => {
         console.log(state.newTodo)
       })
+    })
+    
+    onUpdated(() => {
+      console.log('updated!')
+    })
+    onUnmounted(() => {
+      console.log('unmounted!')
     })
 
     return {
